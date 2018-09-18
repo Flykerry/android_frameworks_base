@@ -109,7 +109,7 @@ public class NetworkMonitor extends StateMachine {
             "http://connectivitycheck.gstatic.com/generate_204";
     private static final String DEFAULT_FALLBACK_URL  = "http://www.google.com/gen_204";
     private static final String DEFAULT_OTHER_FALLBACK_URLS =
-            "http://play.googleapis.com/generate_204";
+            "https://connect.rom.miui.com/generate_204";
     private static final String DEFAULT_USER_AGENT    = "Mozilla/5.0 (X11; Linux x86_64) "
                                                       + "AppleWebKit/537.36 (KHTML, like Gecko) "
                                                       + "Chrome/60.0.3112.32 Safari/537.36";
@@ -869,6 +869,12 @@ public class NetworkMonitor extends StateMachine {
 
             return addressByFamily.values().toArray(new InetAddress[addressByFamily.size()]);
         }
+    }
+    
+    private static boolean isChinese() {
+        Locale locale = Resources.getSystem().getConfiguration().locale;
+        return locale.getLanguage().startsWith(Locale.CHINESE.getLanguage())
+                && !locale.getCountry().equals("TW");
     }
 
     private static boolean isChinese() {
