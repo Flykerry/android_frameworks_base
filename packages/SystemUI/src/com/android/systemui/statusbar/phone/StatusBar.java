@@ -186,6 +186,7 @@ import com.android.systemui.statusbar.phone.Ticker;
 import com.android.systemui.statusbar.phone.TickerView;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.MessagingGroup;
+import com.android.internal.util.aosip.ShakeSensorManager;
 import com.android.internal.widget.MessagingMessage;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
 import com.android.keyguard.KeyguardUpdateMonitor;
@@ -311,7 +312,7 @@ import java.util.Map;
 public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunable,
         DragDownHelper.DragDownCallback, ActivityStarter, OnUnlockMethodChangedListener,
         OnHeadsUpChangedListener, CommandQueue.Callbacks, ZenModeController.Callback,
-        ColorExtractor.OnColorsChangedListener, ConfigurationListener, NotificationPresenter, PackageChangedListener {
+        ColorExtractor.OnColorsChangedListener, ConfigurationListener, NotificationPresenter, ShakeSensorManager.ShakeListener {
     public static final boolean MULTIUSER_DEBUG = false;
 
     public static final boolean ENABLE_CHILD_NOTIFICATIONS
@@ -454,6 +455,10 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
     private final Object mQueueLock = new Object();
 
     protected StatusBarIconController mIconController;
+
+    private ShakeSensorManager mShakeSensorManager;
+    private Boolean enableShakeCleanByUser;
+    private Boolean enableShakeClean;
 
     // viewgroup containing the normal contents of the statusbar
     LinearLayout mStatusBarContent;
@@ -979,6 +984,23 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
         mRRSettingsObserver.observe();
     }
 
+    @Override
+    public synchronized void onShake() {
+        clearAllNotifications();
+    }
+     public void enableShake(boolean enableShakeClean) {
+        ContentResolver resolver = mContext.getContentResolver();
+        if (mShakeSensorManager == null)
+            return;
+        boolean enableShakeCleanByUser = Settings.System.getInt(resolver,
+                Settings.System.SHAKE_CLEAN_NOTIFICATION, 1) == 1;
+        if (enableShakeClean && enableShakeCleanByUser && mDeviceInteractive) {
+            mShakeSensorManager.enable(20);
+        } else {
+            mShakeSensorManager.disable();
+        }
+    }
+
     // ================================================================================
     // Constructing the view
     // ================================================================================
@@ -998,6 +1020,7 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
 
         // TODO: Deal with the ugliness that comes from having some of the statusbar broken out
         // into fragments, but the rest here, it leaves some awkward lifecycle and whatnot.
+        mShakeSensorManager = new ShakeSensorManager(mContext, this);
         mNotificationPanel = mStatusBarWindow.findViewById(R.id.notification_panel);
         mStackScroller = mStatusBarWindow.findViewById(R.id.notification_stack_scroller);
         mZenController.addCallback(this);
@@ -2633,6 +2656,7 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
         }
 
         mExpandedVisible = true;
+        enableShake(true);
 
         // Expand the window to encompass the full screen in anticipation of the drag.
         // This is only possible to do atomically because the status bar is at the top of the screen!
@@ -2777,6 +2801,7 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
 
         mExpandedVisible = false;
         visibilityChanged(false);
+        enableShake(false);
 
         // Shrink the window to the size of the status bar only
         mStatusBarWindowManager.setPanelVisible(false);
@@ -5800,10 +5825,17 @@ public class StatusBar extends SystemUI implements DemoMode, TunerService.Tunabl
         }
 
         void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.SHAKE_CLEAN_NOTIFICATION),
+                    false, this, UserHandle.USER_ALL);
+            update();
         }
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
+	    super.onChange(selfChange, uri);
+           update();
         }
 
         public void update() {
