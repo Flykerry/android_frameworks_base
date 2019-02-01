@@ -4291,13 +4291,6 @@ public final class Settings {
         public static final String SHAKE_CLEAN_NOTIFICATION = "shake_clean_notification";
 
         /**
-	     * Clean recent by shake
-	      *
-	     * @hide
-	      */
-	    public static final String SHAKE_CLEAN_RECENT = "shake_clean_recent";
-
-        /**
          * Whether to enable status and navigation bar color in battery saver mode.
          * Heads up timeout configuration
          * @hide
@@ -5192,6 +5185,13 @@ public final class Settings {
          * @hide
          */
         public static final String GLOBAL_ACTIONS_FLASHLIGHT = "global_actions_flashlight";
+
+        /**
+	     * Clean recent by shake
+	      *
+	     * @hide
+	      */
+	    public static final String SHAKE_CLEAN_RECENT = "shake_clean_recent";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
