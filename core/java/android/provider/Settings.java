@@ -4291,13 +4291,6 @@ public final class Settings {
         public static final String SHAKE_CLEAN_NOTIFICATION = "shake_clean_notification";
 
         /**
-	     * Clean recent by shake
-	      *
-	     * @hide
-	      */
-	    public static final String SHAKE_CLEAN_RECENT = "shake_clean_recent";
-
-        /**
          * Whether to enable status and navigation bar color in battery saver mode.
          * Heads up timeout configuration
          * @hide
