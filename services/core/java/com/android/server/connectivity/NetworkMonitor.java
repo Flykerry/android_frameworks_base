@@ -870,12 +870,6 @@ public class NetworkMonitor extends StateMachine {
             return addressByFamily.values().toArray(new InetAddress[addressByFamily.size()]);
         }
     }
-    
-    private static boolean isChinese() {
-        Locale locale = Resources.getSystem().getConfiguration().locale;
-        return locale.getLanguage().startsWith(Locale.CHINESE.getLanguage())
-                && !locale.getCountry().equals("TW");
-    }
 
     private static boolean isChinese() {
         Locale locale = Resources.getSystem().getConfiguration().locale;
